@@ -1,24 +1,16 @@
-import asyncio
-
-import requests
-from telegram import Update
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import (
     ContextTypes,
     MessageHandler,
     filters,
 )
 
-from t2i.utils import upload_image, queue_prompt
+from config.t2i import get_templates
+from t2i.utils import upload_image
 
 
-async def get_img(url: str):
-    resp = requests.get(url)
-    print("get img")
-    if resp.status_code == 404:
-        await asyncio.sleep(10)
-        return await get_img(url)
-    else:
-        return resp.content
+def split_list(lst, sz):
+    return [lst[i : i + sz] for i in range(0, len(lst), sz)]
 
 
 async def handle_img(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -27,14 +19,20 @@ async def handle_img(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("开始上传图片")
     input_name = new_file.file_unique_id + ".jpg"
     upload_image(input_name, blob=blob)
-    await update.message.reply_text(text="上传图片完毕，开始生成")
-    job = queue_prompt(input_name)
-    output_name = job.get("data", {}).get("output_prefix", "")
-    await update.message.reply_text("任务提交成功，任务编号：" + output_name)
-    img_data = await get_img(
-        "http://123.123.110.133:8099/res/" + output_name + "_0001.jpg"
+    reply_markup = InlineKeyboardMarkup(
+        split_list(
+            list(
+                map(
+                    lambda x: InlineKeyboardButton(
+                        x, callback_data="$".join([x, input_name])
+                    ),
+                    get_templates(),
+                )
+            ),
+            3,
+        )
     )
-    await update.message.reply_photo(img_data)
+    await update.message.reply_text("上传图片完毕，请选择模版", reply_markup=reply_markup)
 
 
 img_handler = MessageHandler(filters.PHOTO, handle_img)
