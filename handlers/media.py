@@ -16,7 +16,7 @@ def split_list(lst, sz):
 async def handle_img(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     new_file = await update.message.effective_attachment[-1].get_file()
     blob = await new_file.download_as_bytearray()
-    await update.message.reply_text("开始上传图片")
+    await update.message.reply_text("Uploading...")
     input_name = new_file.file_unique_id + ".jpg"
     upload_image(input_name, blob=blob)
     reply_markup = InlineKeyboardMarkup(
@@ -32,7 +32,9 @@ async def handle_img(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             3,
         )
     )
-    await update.message.reply_text("上传图片完毕，请选择模版", reply_markup=reply_markup)
+    await update.message.reply_text(
+        "Upload done, please select template", reply_markup=reply_markup
+    )
 
 
 img_handler = MessageHandler(filters.PHOTO, handle_img)

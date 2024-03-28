@@ -22,17 +22,20 @@ async def handle_tpl_sel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     query = update.callback_query
     await query.answer()
     [tpl, input_name] = query.data.split("$")
-    await query.edit_message_text(f"模版: {tpl}")
+    await query.edit_message_text(f"template: {tpl}")
     job = queue_prompt(input_name, tpl)
     output_name = job.get("data", {}).get("output_prefix", "")
     if output_name:
         await context.bot.send_message(
-            update.effective_chat.id, f"任务提交成功，模版：{tpl}，任务编号：{output_name}"
+            update.effective_chat.id,
+            f"Task submission successful! template：{tpl}, task number is {output_name}",
         )
         img_data = await get_img(urljoin(baseUrl, "res/" + output_name + "_0001.jpg"))
         await context.bot.send_photo(update.effective_chat.id, img_data)
     else:
-        await context.bot.send_message(update.effective_chat.id, "任务提交失败")
+        await context.bot.send_message(
+            update.effective_chat.id, "Task submission failed"
+        )
 
 
 tpl_sel_handler = CallbackQueryHandler(handle_tpl_sel)
