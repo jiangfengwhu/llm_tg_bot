@@ -6,7 +6,7 @@ from telegram.ext import (
     Defaults,
 )
 
-from handlers.commands import start_handler
+from handlers.commands import start_handler, chat_handler
 from handlers.media import img_handler
 from handlers.query import tpl_sel_handler
 from t2i.utils import query_tpl
@@ -27,6 +27,7 @@ if __name__ == "__main__":
     )
 
     application.add_handler(start_handler)
+    application.add_handler(chat_handler)
     application.add_handler(img_handler)
     application.add_handler(tpl_sel_handler)
 
